@@ -8,7 +8,7 @@
 # Object files.
 #
 
-OBJ = game.o graphics.o  sprite.o
+OBJ = game.o graphics.o sprite.o entity.o
 
 #
 # Compiler stuff -- adjust to your system.
@@ -48,7 +48,7 @@ count:
 sprite.o: sprite.c sprite.h
 graphics.o: graphics.c graphics.h
 entity.o: entity.c graphics.h sprite.h
-game.o: game.c graphics.h
+game.o: game.c graphics.h entity.h
 
 #
 # The default rule.

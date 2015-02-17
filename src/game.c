@@ -3,6 +3,7 @@
 #include "SDL_image.h"
 #include "graphics.h"
 #include "sprite.h"
+#include "entity.h"
 
 extern SDL_Surface *screen;
 extern SDL_Surface *buffer; /*pointer to the draw buffer*/
@@ -22,6 +23,7 @@ int main(int argc, char *argv[])
   SDL_Surface *temp = NULL;
   SDL_Surface *bg;
   Sprite *tile;
+  Entity *tileEnt;
   int done;
   int keyn;
   int i;
@@ -47,7 +49,9 @@ int main(int argc, char *argv[])
   {
         for(i = 0;i < 12;i++)
         {
-            DrawSprite(tile,buffer,(i * tile->w) + tx,ty,0);
+	    tileEnt = NewEntity(tile, i*tile->w + tx, ty); /*wert*/
+	    DrawEntity(tileEnt);
+            /*DrawSprite(tile,buffer,(i * tile->w) + tx,ty,0);*/
         }
   }
   done = 0;

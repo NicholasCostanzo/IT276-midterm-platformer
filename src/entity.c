@@ -1,18 +1,14 @@
-#include entity.h
-#include sprite.h
+#include "entity.h"
+#include "sprite.h"
 
 #define MaxEntities 255
+
+extern SDL_Surface *buffer; /*pointer to the draw buffer*/
 
 int NumEntities;
 Entity EntityList[MaxEntities];
 
-/*
-  InitSpriteList is called when the program is first started.
-  It just sets everything to zero and sets all pointers to NULL.
-  It should never be called again.
-*/
-
-void initEntityList()
+void InitEntityList()
 {
   int x;
   NumEntities = 0;
@@ -20,8 +16,9 @@ void initEntityList()
   for(x = 0;x < MaxEntities;x++)EntityList[x].inuse = 0;
 }
 
-Entity *newEntity(Sprite *sprite)
+Entity *NewEntity(Sprite *sprite, int xpos, int ypos)
 {
+  int i;
   /*makesure we have the room for a new entity*/
   if(NumEntities + 1 >= MaxEntities)
   {
@@ -29,7 +26,7 @@ Entity *newEntity(Sprite *sprite)
         exit(1);
   }
   
-  int i = 0;
+  
   /*Add the entity to the list*/
   for(i = 0; i < NumEntities; i++)
   {
@@ -39,19 +36,35 @@ Entity *newEntity(Sprite *sprite)
       break;
     }
   }
+  NumEntities++;
   
-  EntityList[i]->sprite = &sprite;
+  EntityList[i].sprite = sprite;
+  EntityList[i].xpos = xpos;
+  EntityList[i].ypos = ypos;
   
-  return EntityList[i];
+  return &EntityList[i];
 }
 
-void drawEntityList(){
+void DrawEntityList(){
   int i = 0;
   for(i = 0; i < NumEntities; i++)
   {
     if(EntityList[i].inuse==1) 
-      DrawSprite(EntityList[i]->sprite, EntityList[i]->sprite->image, EntityList[i].position.x, EntityList[i].position.y, 0);
+      DrawSprite(EntityList[i].sprite, buffer, EntityList[i].xpos, EntityList[i].ypos, 0);
   }
 }
 
+void DrawEntity(Entity *ent){
+  if(ent->inuse==1) DrawSprite(ent->sprite, buffer, ent->xpos, ent->ypos, 0);
+}
 
+void FreeEntity(Entity *ent)
+{
+  ent->inuse--;
+  if(ent->inuse == 0)
+  {
+    ent->sprite = NULL;
+    ent->xpos = NULL;
+    ent->ypos = NULL;
+  }
+}

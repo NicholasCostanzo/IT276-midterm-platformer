@@ -1,8 +1,10 @@
 #include <stdlib.h>
 #include "SDL.h"
 #include "SDL_image.h"
-#include "graphics.h"
 #include "sprite.h"
+#include "mouse.h"
+#include "level.h"
+#include "graphics.h"
 #include "entity.h"
 
 extern SDL_Surface *screen;
@@ -20,27 +22,14 @@ void addCoordinateToFile(char *filepath,int x, int y);
 /*notice the default arguments for main.  SDL expects main to look like that, so don't change it*/
 int main(int argc, char *argv[])
 {
-  SDL_Surface *temp = NULL;
-  SDL_Surface *bg;
-  Sprite *tile;
-  Entity *tileEnt;
+  Entity *player;
   int done;
   int keyn;
-  int i;
-  int mx,my;
-  int tx = 0,ty = 0;
   Uint8 *keys;
-  char imagepath[512];
   Init_All();
-  if (getImagePathFromFile(imagepath,"config.ini") == 0)
-  {
-    temp = IMG_Load(imagepath);/*notice that the path is part of the filename*/
-  }
-  if(temp != NULL)						/*ALWAYS check your pointers before you use them*/
-    bg = SDL_DisplayFormat(temp);
-  SDL_FreeSurface(temp);
-  if(bg != NULL)
-    SDL_BlitSurface(bg,NULL,buffer,NULL);
+ /* Sprite *tile;
+  int i;
+  int tx = 0,ty = 0;
   tile = LoadSprite("images/32_32_16_2sprite.png",32,32);
   getCoordinatesFromFile(&tx, &ty,"config.ini");
   fprintf(stdout,"x and y: (%i, %i)\n",tx,ty);
@@ -49,23 +38,25 @@ int main(int argc, char *argv[])
   {
         for(i = 0;i < 12;i++)
         {
-	    tileEnt = NewEntity(tile, i*tile->w + tx, ty); /*wert*/
-	    DrawEntity(tileEnt);
-            /*DrawSprite(tile,buffer,(i * tile->w) + tx,ty,0);*/
+            DrawSprite(tile,buffer,(i * tile->w) + tx,ty,0);
         }
-  }
+  }*/
   done = 0;
+ 
+  LoadLevel("levels/testlevel.txt"); 
+  CreateLevelEntities();
+  player = makePlayer();
+  
   do
   {
-    ResetBuffer ();
-    DrawMouse();
+    ResetBuffer();
+    DrawLevel();
+    player->bbox.x += 1; /*temporary test for entity movement TODO: remove this*/
+    drawEntityList();
+    /*DrawMouse();*/ /*No need to draw mouse right now*/
     NextFrame();
     SDL_PumpEvents();
     keys = SDL_GetKeyState(&keyn);
-    if(SDL_GetMouseState(&mx,&my))
-    {
-      DrawSprite(tile,buffer,(mx /32) * 32,(my /32) * 32,0); 
-    }
     if(keys[SDLK_ESCAPE])done = 1;
   }while(!done);
   exit(0);		/*technically this will end the program, but the compiler likes all functions that can return a value TO return a value*/
@@ -81,7 +72,8 @@ void CleanUpAll()
 void Init_All()
 {
   Init_Graphics();
-
+  initEntityList();
+  InitLevelSystem();
   InitMouse();
   atexit(CleanUpAll);
 }
@@ -161,7 +153,7 @@ int getCoordinatesFromFile(int *x, int *y,char * filename)
     }
     while (fscanf(fileptr,"%s",buf) != EOF)
     {
-        fprintf(stdout,"buf is: %s\n",buf);
+        /*fprintf(stdout,"buf is: %s\n",buf);*/
         if (strcmp(buf,"position:")==0)
         {
             fscanf(fileptr,"%i %i",&tx,&ty);

@@ -2,23 +2,13 @@
 #include <stdlib.h>
 
 #include "graphics.h"
-#include "sprite.h"
 
-#define MaxSprites    255
 
-struct
-{
-	Uint32 state;
-	Uint32 shown;
-	Uint32 frame;
-	Uint16  x, y;
-}Mouse;
 
 SDL_Surface *screen; /*pointer to the draw buffer*/
 SDL_Surface *buffer; /*pointer to the background image buffer*/
 SDL_Surface *videobuffer; /*pointer to the actual video surface*/
 SDL_Rect Camera; /*x & y are the coordinates for the background map, w and h are of the screen*/
-Sprite *Msprite;
 Uint32 NOW;					/*the current time since program started*/
 
 /*some data on the video settings that can be useful for a lot of functions*/
@@ -122,6 +112,10 @@ void NextFrame()
   FrameDelay(33); /*this will make your frame rate about 30 frames per second.  If you want 60 fps then set it to about 15 or 16*/
 }
 
+
+/*
+	This will draw a pixel on the surface that is past at the x and y coordinates of the color given;
+*/
 
 void DrawPixel(SDL_Surface *screen, Uint8 R, Uint8 G, Uint8 B, int x, int y)
 {
@@ -544,56 +538,5 @@ Uint32 IndexColor(int color)
     }
     return Black_;
 }
-/*
- * and now bringing it all together, we swap the pure colors in the sprite out
- * and put the new colors in.  This maintains any of the artist's shading and
- * detail, but still lets us have that old school palette swapping.  
- */
-void SwapSprite(SDL_Surface *sprite,int color1,int color2,int color3)
-{
-    int x, y;
-    Uint32 pixel;
-   /*First the precautions, that are tedious, but necessary*/
-    if(color1 == -1)return;
-    if(sprite == NULL)return;
-    if ( SDL_LockSurface(sprite) < 0 )
-    {
-        fprintf(stderr, "Can't lock screen: %s\n", SDL_GetError());
-        exit(1);
-    }
-   /*now step through our sprite, pixel by pixel*/
-    for(y = 0;y < sprite->h ;y++)
-    {
-        for(x = 0;x < sprite->w ;x++)
-        {                           
-             pixel = getpixel(sprite,x,y);/*and swap it*/
-             putpixel(sprite,x,y,SetColor(pixel,color1,color2,color3));
-        }
-    }
-    SDL_UnlockSurface(sprite);
-}
 
-/*mouse handling functions*/
-/*this only handles the drawing and animation of.  Assuming you have a 16 by 16  tiled sprite sheet.  This will not handle input*/
-void InitMouse()
-{
-  Msprite = LoadSprite("images/mouse.png",16, 16);
-  if(Msprite == NULL)fprintf(stdout,"mouse didn't load\n");
-  Mouse.state = 0;
-  Mouse.shown = 0;
-  Mouse.frame = 0;
-}
-
-    /*draws to the screen immediately before the blit, after all
-     it wouldn't be a very good mouse if it got covered up by the
-     game content*/
-void DrawMouse()
-{
-  int mx,my;
-  SDL_GetMouseState(&mx,&my);
-  if(Msprite != NULL) DrawSprite(Msprite,screen,mx,my,Mouse.frame);
-  Mouse.frame = (Mouse.frame + 1)%16;
- Mouse.x = mx;
- Mouse.y = my;
-}
 

@@ -54,6 +54,7 @@ enum colors {Red = 1,Green = 2,Blue = 3,Yellow = 4,Orange = 5,Violet = 6,Brown =
                Black = 25,White = 26,Tan = 27,Gold = 28,Silver = 29,YellowGreen = 30,Cyan = 31,Magenta = 32};
 
 
+
 typedef struct	/*this didn't need to be its own type, its only used once*/
 {
     int xres,yres,depth;
@@ -62,13 +63,15 @@ typedef struct	/*this didn't need to be its own type, its only used once*/
 void Init_Graphics();
 void DrawPixel(SDL_Surface *screen, Uint8 R, Uint8 G, Uint8 B, int x, int y);
 void BlankScreen(SDL_Surface *buf,Uint32 color);
-void SwapSprite(SDL_Surface *sprite,int color1,int color2,int color3);
 
 Uint32 IndexColor(int color);
+Uint32 SetColor(Uint32 color, int newcolor1,int newcolor2, int newcolor3);
+void putpixel(SDL_Surface *surface, int x, int y, Uint32 pixel);
+Uint32 getpixel(SDL_Surface *surface, int x, int y);
+
+
 void FrameDelay(Uint32 delay);
 void ResetBuffer();
 void NextFrame();
-void InitMouse();
-void DrawMouse();
 
 #endif

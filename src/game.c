@@ -27,20 +27,6 @@ int main(int argc, char *argv[])
   int keyn;
   Uint8 *keys;
   Init_All();
- /* Sprite *tile;
-  int i;
-  int tx = 0,ty = 0;
-  tile = LoadSprite("images/32_32_16_2sprite.png",32,32);
-  getCoordinatesFromFile(&tx, &ty,"config.ini");
-  fprintf(stdout,"x and y: (%i, %i)\n",tx,ty);
-  addCoordinateToFile("config.ini",7,11);
-  if(tile != NULL)
-  {
-        for(i = 0;i < 12;i++)
-        {
-            DrawSprite(tile,buffer,(i * tile->w) + tx,ty,0);
-        }
-  }*/
   done = 0;
  
   LoadLevel("levels/testlevel.txt"); 
@@ -50,8 +36,8 @@ int main(int argc, char *argv[])
   do
   {
     ResetBuffer();
+    thinkEntityList();
     DrawLevel();
-    player->bbox.x += 1; /*temporary test for entity movement TODO: remove this*/
     drawEntityList();
     /*DrawMouse();*/ /*No need to draw mouse right now*/
     NextFrame();
@@ -66,6 +52,7 @@ int main(int argc, char *argv[])
 void CleanUpAll()
 {
   CloseSprites();
+  clearEntities();
   /*any other cleanup functions can be added here*/ 
 }
 

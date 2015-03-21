@@ -5,6 +5,8 @@
 typedef struct entity_s
 {
     int inuse;
+    int canKill;
+    int levelGoal;
     Sprite *sprite;
     int frame;
     SDL_Rect bbox; /**<bounding box for the entity - also holds position*/
@@ -84,6 +86,16 @@ int isGrounded(SDL_Rect box1);
  * @brief goes through all active block entities and checks if box1 collides with any of them
  */
 int worldCollide(SDL_Rect box1);
+
+/**
+ * @brief checks if box1 collides with anything that will destroy it
+ */
+int killCollide(SDL_Rect box1);
+
+/**
+ * @brief check if box1 collides with a level goal, and returns which goal number if it does
+ */
+int goalCollide(SDL_Rect box1);
 
 /**
  * @brief sets up the player entity

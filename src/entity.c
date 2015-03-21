@@ -1,13 +1,18 @@
 #include "entity.h"
+#include "level.h"
+#include "levelTree.h"
 
 #define __MaxEntities 4096
 
 extern SDL_Surface *buffer; /*pointer to the draw buffer*/
 extern SDL_Surface *screen;
+extern SDL_Rect Camera;
+extern struct node *levelMap;
 
 Entity * __entityList = NULL;
 Entity EntityList[__MaxEntities];
 Entity BlockEntityList[__MaxEntities];
+Entity *player = NULL;
 
 
 int NumEntities;
@@ -73,7 +78,7 @@ void drawBlockEntityList()
 }
 
 void drawEntity(Entity *ent, SDL_Surface *surface, int frame){
-  if(ent->inuse==1) DrawSprite(ent->sprite, surface, ent->bbox.x, ent->bbox.y, frame);
+  if(ent->inuse==1 && ent->sprite) DrawSprite(ent->sprite, surface, ent->bbox.x - Camera.x, ent->bbox.y - Camera.y, frame);
 }
 
 
@@ -106,6 +111,7 @@ Entity *newBlockEntity(Sprite *spr, int x, int y, int w, int h, int frame){
       BlockEntityList[i].bbox.y = y;
       BlockEntityList[i].bbox.w = w;
       BlockEntityList[i].bbox.h = h;
+      NumEntities++;
       return &BlockEntityList[i];
     }
   }
@@ -123,7 +129,7 @@ int collide(SDL_Rect box1,SDL_Rect box2)
 int onTop(SDL_Rect box1, SDL_Rect box2, int tolerance)
 {
   /*check to see if box 1 is standing on top of box 2, with a variable tolerance (actual space between the two)*/
-  if((box1.x + box1.w > box2.x) && (box1.x < box2.x+box2.w) && (box1.y + box1.h <= box2.y + tolerance) && (box1.y + box2.h >= box2.y - tolerance))
+  if((box1.x + box1.w >= box2.x) && (box1.x <= box2.x+box2.w) && (box1.y + box1.h <= box2.y + tolerance) && (box1.y + box2.h >= box2.y - tolerance))
     return 1;
   return 0;
 }
@@ -138,6 +144,36 @@ int isGrounded(SDL_Rect box1)
     {
       box2 = BlockEntityList[i].bbox;
       if(onTop(box1, box2, 10)) return 1;
+    }
+  }
+  return 0;
+}
+
+int killCollide(SDL_Rect box1)
+{
+  int i;
+  SDL_Rect box2;
+  for (i = 0; i < __MaxEntities; i++)
+  {
+    if(EntityList[i].inuse == 1 && EntityList[i].canKill == 1)
+    {
+      box2 = EntityList[i].bbox;
+      if(collide(box1, box2)) return 1;
+    }
+  }
+  return 0;
+}
+
+int goalCollide(SDL_Rect box1)
+{
+  int i;
+  SDL_Rect box2;
+  for(i = 0; i < __MaxEntities; i++)
+  {
+    if(EntityList[i].inuse == 1 && EntityList[i].levelGoal >= 1)
+    {
+      box2 = EntityList[i].bbox;
+      if(collide(box1, box2)) return EntityList[i].levelGoal;
     }
   }
   return 0;
@@ -179,7 +215,7 @@ Entity *makePlayer()
 
 void playerThink(Entity *self)
 {
-  int numkeys;
+  int i, numkeys, goalNum;
   SDL_Rect box = self->bbox;
   Uint8 *keys = SDL_GetKeyState(&numkeys);   
    
@@ -222,12 +258,47 @@ void playerThink(Entity *self)
 	  if(self->vely < 10) self->vely += 2;
       }
       
+      goalNum = goalCollide(self->bbox);
+      if(goalNum && levelMap && levelMap->child)
+      {
+	levelMap = levelMap->child;
+	for(i = 0; i < goalNum-1; i++)
+	{
+	  if(levelMap->sibling)levelMap = levelMap->sibling;
+	}
+	for(i = 0; i < 2; i++){ /*something breaks graphics here unless you do all of it twice for some reason. this is just a hacky quick-fix TODO: fucking fix it*/
+	CloseLevel();
+	CloseSprites();
+	clearEntities();
+	
+	Init_Graphics();
+	initEntityList();
+	InitLevelSystem();
+	LoadLevel(numToFileName(levelMap->level)); 
+	CreateLevelEntities();
+	player = makePlayer();
+	}
+	
+	fprintf(stdout, "level: %d \n", levelMap->level);
+      }
+      
+      if(killCollide(self->bbox))
+      {
+	self->health = 0;
+      }
    }
+   else
+   {
+     self->health = 100;
+     player->bbox.x = 100;
+     player->bbox.y = 672;
+  }
 }
 
 void freeEntity(Entity *ent)
 {
     ent->inuse=0;
+    NumEntities--;
     if(ent->sprite != NULL) FreeSprite(ent->sprite);
     /*handle freeing resources like Sprite data*/
     memset(ent,0,sizeof(Entity));

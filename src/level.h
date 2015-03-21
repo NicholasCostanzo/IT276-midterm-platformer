@@ -12,6 +12,7 @@ typedef struct
   char filename[LEVELNAMELEN]; /**<the filename and path of the level loaded*/
   Sprite *bgImage;  /**<the actual background image for the level*/
   Sprite *tileSet;  /**<the tile sheet for drawing tiles*/
+  Sprite *tileGoal; /**<tile for the level goal*/
   SDL_Rect bounds;  /**<absolute bounds for entities in this level*/
   int *tileMap; /**<allocated tilemap data*/
   int  tileWidth; /**<width of tiles for tile data*/
@@ -25,6 +26,11 @@ typedef struct
  * @param filename the path and filename of the level to load
  */
 void LoadLevel(char *filename);
+
+/*
+ * @brief takes a level number and returns a string in the format "levels/level%i" so it may then be passed to LoadLevel
+ */
+char* numToFileName(int num);
 
 /**
  * @brief Creates entities from the level file to reduce draw redundency

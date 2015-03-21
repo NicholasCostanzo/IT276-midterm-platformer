@@ -138,6 +138,7 @@ void FreeSprite(Sprite *sprite)
     /*just to be anal retentive, check to see if the image is already freed*/
     if(sprite->image != NULL)SDL_FreeSurface(sprite->image);
     sprite->image = NULL;
+    NumSprites--;
   }
   /*and then lets make sure we don't leave any potential seg faults 
    *  lying around*/

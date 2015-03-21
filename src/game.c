@@ -6,32 +6,40 @@
 #include "level.h"
 #include "graphics.h"
 #include "entity.h"
+#include "levelTree.h"
 
 extern SDL_Surface *screen;
 extern SDL_Surface *buffer; /*pointer to the draw buffer*/
 extern SDL_Rect Camera;
+extern Entity *player;
+extern struct node *levelMap;
 
 void Init_All();
 
 int getImagePathFromFile(char *filepath,char * filename);
 int getCoordinatesFromFile(int *x, int *y,char * filename);
 void addCoordinateToFile(char *filepath,int x, int y);
+void updateCamera();
 
 
 /*this program must be run from the directory directly below images and src, not from within src*/
 /*notice the default arguments for main.  SDL expects main to look like that, so don't change it*/
 int main(int argc, char *argv[])
 {
-  Entity *player;
   int done;
   int keyn;
   Uint8 *keys;
+  
   Init_All();
   done = 0;
- 
-  LoadLevel("levels/testlevel.txt"); 
+  
+  buildLevelTree();
+  LoadLevel(numToFileName(levelMap->level)); 
   CreateLevelEntities();
   player = makePlayer();
+  
+  preorder(levelMap); /*TODO: probably should remove this or wrap it in a debug state*/
+  fprintf(stdout, "\n");
   
   do
   {
@@ -39,6 +47,8 @@ int main(int argc, char *argv[])
     thinkEntityList();
     DrawLevel();
     drawEntityList();
+    updateCamera();
+    
     /*DrawMouse();*/ /*No need to draw mouse right now*/
     NextFrame();
     SDL_PumpEvents();
@@ -51,8 +61,10 @@ int main(int argc, char *argv[])
 
 void CleanUpAll()
 {
+  destroyTree(levelMap);
   CloseSprites();
   clearEntities();
+  fprintf(stdout, "exit? \n");
   /*any other cleanup functions can be added here*/ 
 }
 
@@ -61,7 +73,7 @@ void Init_All()
   Init_Graphics();
   initEntityList();
   InitLevelSystem();
-  InitMouse();
+  /*InitMouse();*/
   atexit(CleanUpAll);
 }
 
@@ -152,4 +164,14 @@ int getCoordinatesFromFile(int *x, int *y,char * filename)
     if (x)*x = tx;
     if (y)*y = ty;
     return returnValue;
+}
+
+void updateCamera()
+{
+  Camera.x = player->bbox.x - (Camera.w >> 1);
+  Camera.y = player->bbox.y - (Camera.h >> 1);
+  if(Camera.x > buffer->w - Camera.w)Camera.x = buffer->w - Camera.w;
+  if(Camera.x < 0)Camera.x = 0;
+  if(Camera.y > buffer->h - Camera.h)Camera.y = buffer->h - Camera.h;
+  if(Camera.y < 0)Camera.y = 0;
 }

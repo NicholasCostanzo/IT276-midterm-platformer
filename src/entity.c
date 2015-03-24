@@ -8,12 +8,16 @@ extern SDL_Surface *buffer; /*pointer to the draw buffer*/
 extern SDL_Surface *screen;
 extern SDL_Rect Camera;
 extern struct node *levelMap;
+extern int done;
 
 Entity * __entityList = NULL;
 Entity EntityList[__MaxEntities];
 Entity BlockEntityList[__MaxEntities];
 Entity *player = NULL;
 
+/**
+ * TODO: split some of this code of into player.c, enemy.c, etc.
+ */
 
 int NumEntities;
 
@@ -129,7 +133,7 @@ int collide(SDL_Rect box1,SDL_Rect box2)
 int onTop(SDL_Rect box1, SDL_Rect box2, int tolerance)
 {
   /*check to see if box 1 is standing on top of box 2, with a variable tolerance (actual space between the two)*/
-  if((box1.x + box1.w >= box2.x) && (box1.x <= box2.x+box2.w) && (box1.y + box1.h <= box2.y + tolerance) && (box1.y + box2.h >= box2.y - tolerance))
+  if((box1.x + box1.w > box2.x) && (box1.x < box2.x+box2.w) && (box1.y + box1.h <= box2.y + tolerance) && (box1.y + box2.h >= box2.y - tolerance))
     return 1;
   return 0;
 }
@@ -149,6 +153,25 @@ int isGrounded(SDL_Rect box1)
   return 0;
 }
 
+int enemyBounce(SDL_Rect box1)
+{
+  int i;
+  SDL_Rect box2;
+  for(i = 0; i < __MaxEntities; i++)
+  {
+    if(EntityList[i].inuse && EntityList[i].isBad)
+    {
+      
+      box2 = EntityList[i].bbox;
+      if(onTop(box1, box2, 10)){
+	EntityList[i].health --; /*TODO: also make temporarily invinsible*/
+	return 1;
+      }
+    }
+  }
+  return 0;
+}
+
 int killCollide(SDL_Rect box1)
 {
   int i;
@@ -156,6 +179,21 @@ int killCollide(SDL_Rect box1)
   for (i = 0; i < __MaxEntities; i++)
   {
     if(EntityList[i].inuse == 1 && EntityList[i].canKill == 1)
+    {
+      box2 = EntityList[i].bbox;
+      if(collide(box1, box2)) return 1;
+    }
+  }
+  return 0;
+}
+
+int killCollideNonPlayer(SDL_Rect box1)
+{
+  int i;
+  SDL_Rect box2;
+  for (i = 0; i < __MaxEntities; i++)
+  {
+    if(!EntityList[i].isBad && EntityList[i].inuse && EntityList[i].canKill)
     {
       box2 = EntityList[i].bbox;
       if(collide(box1, box2)) return 1;
@@ -215,7 +253,7 @@ Entity *makePlayer()
 
 void playerThink(Entity *self)
 {
-  int i, numkeys, goalNum;
+  int i, numkeys, goalNum, level;
   SDL_Rect box = self->bbox;
   Uint8 *keys = SDL_GetKeyState(&numkeys);   
    
@@ -248,15 +286,12 @@ void playerThink(Entity *self)
       {
 	  self->ST_JUMP = 1;
       }
-      
       if(self->ST_JUMP)
       {
 	if(self->vely > -10) self->vely -= 2;
 	else self->ST_JUMP = 0;
       }
-      else{
-	  if(self->vely < 10) self->vely += 2;
-      }
+      else if(self->vely < 10) self->vely += 2;
       
       goalNum = goalCollide(self->bbox);
       if(goalNum && levelMap && levelMap->child)
@@ -274,7 +309,26 @@ void playerThink(Entity *self)
 	Init_Graphics();
 	initEntityList();
 	InitLevelSystem();
-	LoadLevel(numToFileName(levelMap->level)); 
+	level = levelMap->level;
+	LoadLevel(numToFileName(level)); 
+	CreateLevelEntities();
+	player = makePlayer();
+	}
+	
+	fprintf(stdout, "level: %d \n", levelMap->level);
+      }
+      else if(goalNum && levelMap)
+      {
+	level=999;
+	for(i = 0; i < 2; i++){ /*something breaks graphics here unless you do all of it twice for some reason. this is just a hacky quick-fix TODO: fucking fix it*/
+	CloseLevel();
+	CloseSprites();
+	clearEntities();
+	
+	Init_Graphics();
+	initEntityList();
+	InitLevelSystem();
+	LoadLevel(numToFileName(level)); 
 	CreateLevelEntities();
 	player = makePlayer();
 	}
@@ -282,7 +336,11 @@ void playerThink(Entity *self)
 	fprintf(stdout, "level: %d \n", levelMap->level);
       }
       
-      if(killCollide(self->bbox))
+      if(enemyBounce(self->bbox))
+      {
+	self->ST_JUMP = 1;
+      }
+      else if(killCollide(self->bbox))
       {
 	self->health = 0;
       }
@@ -292,6 +350,170 @@ void playerThink(Entity *self)
      self->health = 100;
      player->bbox.x = 100;
      player->bbox.y = 672;
+  }
+}
+
+void enemy3Think(Entity *self)
+{
+  SDL_Rect box = self->bbox;
+  int temp;
+  
+  if(self->health > 0)
+  {
+    if(self->velx) /*move in current direction until a collision is detected, then change direction*/
+    {
+      box.x = box.x + self->velx;
+      temp = worldCollide(box);
+      if(!temp) self->bbox.x += self->velx;
+      else self->velx *= -1;
+    }
+    if(self->vely)
+    {
+      box.y = self->bbox.y + self->vely;
+      if(!worldCollide(box)) self->bbox.y = box.y;
+    }
+    
+    if(self->ST_JUMP)
+    {
+      if(self->vely > -10) self->vely -= 2;
+      else self->ST_JUMP = 0;
+    }
+    else if(self->vely < 10) self->vely += 2;
+    
+    if(killCollideNonPlayer(self->bbox))
+    {
+      self->health = 0;
+    }
+  }
+  else
+  {
+    self->inuse = 0;
+  }
+}
+
+void enemy2Think(Entity *self)
+{
+  SDL_Rect box = self->bbox;
+  int temp;
+  
+  if(self->health > 0)
+  {
+    if(self->velx) /*move in current direction until a collision is detected, then change direction*/
+    {
+      box.x = box.x + self->velx;
+      temp = worldCollide(box);
+      if(!temp) self->bbox.x += self->velx;
+      else self->velx *= -1;
+    }
+    if(self->vely)
+    {
+      box.y = self->bbox.y + self->vely;
+      if(!worldCollide(box)) self->bbox.y = box.y;
+    }
+    
+    if(isGrounded(box))
+    {
+	self->ST_JUMP = 1;
+    }
+    if(self->ST_JUMP)
+    {
+      if(self->vely > -10) self->vely -= 2;
+      else self->ST_JUMP = 0;
+    }
+    else if(self->vely < 10) self->vely += 2;
+    
+    if(killCollideNonPlayer(self->bbox))
+    {
+      self->health = 0;
+    }
+  }
+  else
+  {
+    self->inuse = 0;
+  }
+}
+
+void enemy1Think(Entity *self)
+{
+  SDL_Rect box = self->bbox;
+  int temp;
+  
+  if(self->health > 0)
+  {
+   if(self->velx) /*move in current direction until a collision is detected, then change direction*/
+    {
+      box.x = box.x + self->velx;
+      temp = worldCollide(box);
+      if(!temp) self->bbox.x += self->velx;
+      else self->velx *= -1;
+    }
+    if(self->vely)
+    {
+      box.y = self->bbox.y + self->vely;
+      if(!worldCollide(box)) self->bbox.y = box.y;
+    }
+    
+    if(self->ST_JUMP)
+    {
+      if(self->vely > -10) self->vely -= 2;
+      else self->ST_JUMP = 0;
+    }
+    else{
+      if(self->vely < 10) self->vely += 2;
+      else self->ST_JUMP = 1;
+    }
+    
+    if(killCollideNonPlayer(self->bbox))
+    {
+      self->health = 0;
+    }
+  }
+  else
+  {
+    self->inuse = 0;
+  }
+}
+
+void enemy9Think(Entity *self)
+{
+  SDL_Rect box = self->bbox;
+  int temp;
+  
+  if(self->health > 0)
+  {
+   if(self->velx) /*move in current direction until a collision is detected, then change direction*/
+    {
+      box.x = box.x + self->velx;
+      temp = worldCollide(box);
+      if(!temp) self->bbox.x += self->velx;
+      else self->velx *= -1;
+    }
+    if(self->vely)
+    {
+      box.y = self->bbox.y + self->vely;
+      if(!worldCollide(box)) self->bbox.y = box.y;
+    }
+    
+    if(self->ST_JUMP)
+    {
+      if(self->vely > -10) self->vely -= 2;
+      else self->ST_JUMP = 0;
+    }
+    else{
+      if(self->vely < 10) self->vely += 2;
+      else self->ST_JUMP = 1;
+    }
+    
+    if(killCollideNonPlayer(self->bbox))
+    {
+      self->health = 0;
+    }
+  }
+  else
+  {
+    self->inuse = 0;
+    done = 1;
+    exit(0);
   }
 }
 

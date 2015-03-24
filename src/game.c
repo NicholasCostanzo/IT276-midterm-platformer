@@ -13,6 +13,7 @@ extern SDL_Surface *buffer; /*pointer to the draw buffer*/
 extern SDL_Rect Camera;
 extern Entity *player;
 extern struct node *levelMap;
+int done;
 
 void Init_All();
 
@@ -20,6 +21,7 @@ int getImagePathFromFile(char *filepath,char * filename);
 int getCoordinatesFromFile(int *x, int *y,char * filename);
 void addCoordinateToFile(char *filepath,int x, int y);
 void updateCamera();
+void mainMenu();
 
 
 /*this program must be run from the directory directly below images and src, not from within src*/
@@ -33,6 +35,7 @@ int main(int argc, char *argv[])
   Init_All();
   done = 0;
   
+  mainMenu();
   buildLevelTree();
   LoadLevel(numToFileName(levelMap->level)); 
   CreateLevelEntities();
@@ -64,7 +67,6 @@ void CleanUpAll()
   destroyTree(levelMap);
   CloseSprites();
   clearEntities();
-  fprintf(stdout, "exit? \n");
   /*any other cleanup functions can be added here*/ 
 }
 
@@ -166,6 +168,33 @@ int getCoordinatesFromFile(int *x, int *y,char * filename)
     return returnValue;
 }
 
+/*
+ *  TODO: split this off into ui.c
+ */
+void mainMenu()
+{
+  int keyn;
+  int start = 0;
+  Uint8 *keys;
+  Sprite *bgpath = LoadSprite("images/background2.png",1024,768);
+  Sprite *beginpath = LoadSprite("images/begin.png",467,53);
+  while(!start)
+  {
+    ResetBuffer();
+    DrawSprite(bgpath,screen,0,0,0);
+    DrawSprite(beginpath,screen,100,100,0);
+    keys = SDL_GetKeyState(&keyn);
+    
+    NextFrame();
+    SDL_PumpEvents();
+    if(keys[SDLK_SPACE]) start = 1;
+  }
+  
+}
+
+/*
+ * TODO: split camera functionality off into camera.c and tweak this functionality
+ */
 void updateCamera()
 {
   Camera.x = player->bbox.x - (Camera.w >> 1);

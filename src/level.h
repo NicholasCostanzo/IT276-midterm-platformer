@@ -12,6 +12,10 @@ typedef struct
   char filename[LEVELNAMELEN]; /**<the filename and path of the level loaded*/
   Sprite *bgImage;  /**<the actual background image for the level*/
   Sprite *tileSet;  /**<the tile sheet for drawing tiles*/
+  Sprite *enemy1;
+  Sprite *enemy2;
+  Sprite *enemy3;
+  Sprite *enemy9;
   Sprite *tileGoal; /**<tile for the level goal*/
   SDL_Rect bounds;  /**<absolute bounds for entities in this level*/
   int *tileMap; /**<allocated tilemap data*/

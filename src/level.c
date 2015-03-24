@@ -18,7 +18,7 @@ void LoadLevel(char *filename)
   int tsw,tsh; /*tile set width and height*/
   int tw,th; /*tile map width and height*/
   int *maptemp = NULL;
-  Sprite *temp, *temp2, *temp3;
+  Sprite *temp, *temp2, *temp3, *temp4, *temp5, *temp6, *temp9;
   levelfile = fopen(filename,"r");
   if (levelfile == NULL)
   {
@@ -108,8 +108,12 @@ void LoadLevel(char *filename)
   }
   fclose(levelfile);
   temp = LoadSprite(bgimagepath,w,h);
-  temp2 = LoadSprite(tilesetpath,tsw,tsh);
+  temp2 = LoadSprite(tilesetpath,tsw,tsh);		/*TODO: PLEASE write some sort of manager for all this*/
   temp3 = LoadSprite(tilegoalpath, tsw, tsh);
+  temp4 = LoadSprite("images/enemy3.png",tsw,tsh);
+  temp5 = LoadSprite("images/enemy2.png",tsw,tsh);
+  temp6 = LoadSprite("images/enemy1.png",tsw,tsh);
+  temp9 = LoadSprite("images/enemy9.png", tsw*4, tsh*4);
   
   if (!temp)
   {
@@ -130,6 +134,10 @@ void LoadLevel(char *filename)
   __level.loaded = 1;
   __level.tileSet = temp2;
   __level.tileGoal = temp3;
+  __level.enemy1 = temp4;
+  __level.enemy2 = temp5;
+  __level.enemy3 = temp6;
+  __level.enemy9 = temp9;
   __level.tileMap = maptemp;
   __level.tileWidth = tw;
   __level.tileHeight = th;
@@ -156,7 +164,11 @@ void CreateLevelEntities()
     {
       for (i = 0;i < __level.tileWidth;++i)
       {
-        if (__level.tileMap[(j * __level.tileWidth) + i] == 1)
+	
+	/*
+	 * TODO: move all of these into their own create entity functions
+	 */
+        if (__level.tileMap[(j * __level.tileWidth) + i] == 1) /*world tiles*/
         {
 	  tsw = __level.tileSet->w;
 	  tsh = __level.tileSet->h;
@@ -168,7 +180,7 @@ void CreateLevelEntities()
 	  frame = __level.tileMap[(j * __level.tileWidth) + i] - 1;
 	  newBlockEntity(__level.tileSet, x, y, tsw, tsh, frame);
         }
-        else if (__level.tileMap[(j * __level.tileWidth) + i] == 2)
+        else if (__level.tileMap[(j * __level.tileWidth) + i] == 2) /*death tiles*/
 	{
 	  Entity* temp;
 	  x = i * __level.tileSet->w;
@@ -182,7 +194,7 @@ void CreateLevelEntities()
 	  temp->bbox.h = h;
 	  temp->canKill = 1;
 	}
-	else if (__level.tileMap[(j * __level.tileWidth) + i] == 3)
+	else if (__level.tileMap[(j * __level.tileWidth) + i] == 3) /*goal*/
 	{
 	  Entity* temp;
 	  
@@ -199,7 +211,82 @@ void CreateLevelEntities()
 	  temp->levelGoal = goalCount; /*1 if first goal found, 2 if second, 3 if third, etc.*/
 	  temp->sprite = __level.tileGoal;
 	}
-
+	else if(__level.tileMap[(j * __level.tileWidth) + i] == 4) /*enemy3*/
+	{
+	Entity* temp;
+	w = __level.tileSet->w;
+	h = __level.tileSet->h;
+	x = i * w;
+	y = j * h;
+	temp = newEntity();
+	temp->bbox.x = x;
+	temp->bbox.y = y;
+	temp->bbox.w = w;
+	temp->bbox.h = h;
+	temp->velx = 4;
+	temp->health = 1;
+	temp->sprite = __level.enemy3;
+	temp->canKill = 1;
+	temp->isBad = 1;
+	temp->think = enemy3Think;
+	}
+	else if(__level.tileMap[(j * __level.tileWidth) + i] == 5) /*enemy2*/
+	{
+	Entity* temp;
+	w = __level.tileSet->w;
+	h = __level.tileSet->h;
+	x = i * w;
+	y = j * h;
+	temp = newEntity();
+	temp->bbox.x = x;
+	temp->bbox.y = y;
+	temp->bbox.w = w;
+	temp->bbox.h = h;
+	temp->velx = 4;
+	temp->health = 1;
+	temp->sprite = __level.enemy2;
+	temp->canKill = 1;
+	temp->isBad = 1;
+	temp->think = enemy2Think;
+	}
+	else if(__level.tileMap[(j * __level.tileWidth) + i] == 6) /*enemy1*/
+	{
+	Entity* temp;
+	w = __level.tileSet->w;
+	h = __level.tileSet->h;
+	x = i * w;
+	y = j * h;
+	temp = newEntity();
+	temp->bbox.x = x;
+	temp->bbox.y = y;
+	temp->bbox.w = w;
+	temp->bbox.h = h;
+	/*temp->velx = 4;*/
+	temp->health = 1;
+	temp->sprite = __level.enemy1;
+	temp->canKill = 1;
+	temp->isBad = 1;
+	temp->think = enemy1Think;
+	}
+	else if(__level.tileMap[(j * __level.tileWidth) + i] == 9) /*enemy9 (boss)*/
+	{
+	  Entity* temp;
+	  w = __level.tileSet->w * 4;
+	  h = __level.tileSet->h * 4;
+	  x = i * __level.tileSet->w;
+	  y = i * __level.tileSet->h;
+	  temp = newEntity();
+	  temp->bbox.x = x;
+	  temp->bbox.y = y;
+	  temp->bbox.w = w;
+	  temp->bbox.h = h;
+	  temp->velx = 4;
+	  temp->health = 3;
+	  temp->sprite = __level.enemy9;
+	  temp->canKill = 1;
+	  temp->isBad = 1;
+	  temp->think = enemy9Think;
+	}
       }
     }
   }

@@ -6,6 +6,7 @@ typedef struct entity_s
 {
     int inuse;
     int canKill;
+    int isBad;
     int levelGoal;
     Sprite *sprite;
     int frame;
@@ -88,9 +89,19 @@ int isGrounded(SDL_Rect box1);
 int worldCollide(SDL_Rect box1);
 
 /**
+ * @brief checks to see if box 1 is on top of an enemy. if so, kill the enemy.
+ */
+int enemyBounce(SDL_Rect box1);
+
+/**
  * @brief checks if box1 collides with anything that will destroy it
  */
 int killCollide(SDL_Rect box1);
+
+/*
+ * @brief checks for hazards that can kill enemies
+ */
+int killCollideNonPlayer(SDL_Rect box1);
 
 /**
  * @brief check if box1 collides with a level goal, and returns which goal number if it does
@@ -106,6 +117,26 @@ Entity *makePlayer();
  * @brief figures out what the player should be doing every frame
  */
 void playerThink(Entity *self);
+
+/**
+ * @brief simple enemy that goes back and forth
+ */
+void enemy3Think(Entity *self);
+
+/**
+ * @brief simple enemy that goes back and forth while jumping
+ */
+void enemy2Think(Entity *self);
+
+/**
+ * @brief simple enemy that floats in place
+ */
+void enemy1Think(Entity *self);
+
+/**
+ * @brief level 1 boss
+ */
+void enemy9Think(Entity *self);
 
 /**
  * @brief clears an entity

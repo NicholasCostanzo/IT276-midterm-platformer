@@ -12,6 +12,7 @@ Entity EntityList[MaxEntities];
   It should never be called again.
 */
 
+//wfm5 I see that you are setting the inuse to 0 here. Where are you freeing your entities
 void initEntityList()
 {
   int x;

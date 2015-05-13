@@ -13,8 +13,11 @@ typedef struct
   Sprite *bgImage;  /**<the actual background image for the level*/
   Sprite *tileSet;  /**<the tile sheet for drawing tiles*/
   Sprite *enemy1;
+  Sprite *enemy1alt1;
   Sprite *enemy2;
+  Sprite *enemy2alt1;
   Sprite *enemy3;
+  Sprite *enemy3alt1;
   Sprite *enemy9;
   Sprite *enemy9alt1;
   Sprite *enemy9alt2;

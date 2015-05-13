@@ -19,7 +19,7 @@ void LoadLevel(char *filename)
   int tsw,tsh; /*tile set width and height*/
   int tw,th; /*tile map width and height*/
   int *maptemp = NULL;
-  Sprite *temp, *temp2, *temp3, *temp4, *temp5, *temp6, *temp9, *temp9alt1, *temp9alt2;
+  Sprite *temp, *temp2, *temp3, *temp4, *temp4alt1, *temp5, *temp5alt1, *temp6, *temp6alt1, *temp9, *temp9alt1, *temp9alt2;
   levelfile = fopen(filename,"r");
   if (levelfile == NULL)
   {
@@ -110,10 +110,14 @@ void LoadLevel(char *filename)
   fclose(levelfile);
   temp = LoadSprite(bgimagepath,w,h);
   temp2 = LoadSprite(tilesetpath,tsw,tsh);		/*TODO: PLEASE write some sort of manager for all this*/
+  
   temp3 = LoadSprite(tilegoalpath, tsw, tsh);
   temp4 = LoadSprite("images/enemy3.png",tsw,tsh);
+  temp4alt1 = LoadSprite("images/enemy3alt1.png",tsw,tsh);
   temp5 = LoadSprite("images/enemy2.png",tsw,tsh);
+  temp5alt1 = LoadSprite("images/enemy2alt1.png",tsw,tsh);
   temp6 = LoadSprite("images/enemy1.png",tsw,tsh);
+  temp6alt1 = LoadSprite("images/enemy1alt1.png",tsw,tsh);
   temp9 = LoadSprite("images/enemy9.png", tsw*4, tsh*4);
   temp9alt1 = LoadSprite("images/enemy9alt1.png", tsw*4, tsh*4);
   temp9alt2 = LoadSprite("images/enemy9alt2.png", tsw*4, tsh*4);
@@ -138,8 +142,11 @@ void LoadLevel(char *filename)
   __level.tileSet = temp2;
   __level.tileGoal = temp3;
   __level.enemy1 = temp4;
+  __level.enemy1alt1 = temp4alt1;
   __level.enemy2 = temp5;
+  __level.enemy2alt1 = temp5alt1;
   __level.enemy3 = temp6;
+  __level.enemy3alt1 = temp6alt1;
   __level.enemy9 = temp9;
   __level.enemy9alt1 = temp9alt1;
   __level.enemy9alt2 = temp9alt2;
@@ -218,60 +225,91 @@ void CreateLevelEntities()
 	}
 	else if(__level.tileMap[(j * __level.tileWidth) + i] == 4) /*enemy3*/
 	{
-	Entity* temp;
-	w = __level.tileSet->w;
-	h = __level.tileSet->h;
-	x = i * w;
-	y = j * h;
-	temp = newEntity();
-	temp->bbox.x = x;
-	temp->bbox.y = y;
-	temp->bbox.w = w;
-	temp->bbox.h = h;
-	temp->velx = 4;
-	temp->health = 1;
-	temp->sprite = __level.enemy3;
-	temp->canKill = 1;
-	temp->isBad = 1;
-	temp->think = enemy3Think;
+	  Entity* temp;
+	  int rng = rand_int(2);
+	  w = __level.tileSet->w;
+	  h = __level.tileSet->h;
+	  x = i * w;
+	  y = j * h;
+	  temp = newEntity();
+	  temp->bbox.x = x;
+	  temp->bbox.y = y;
+	  temp->bbox.w = w;
+	  temp->bbox.h = h;
+	  temp->velx = 4;
+	  temp->health = 1;
+	  if(rng == 0)
+	  {
+	    temp->sprite = __level.enemy3;
+	    temp->think = enemy3Think;
+	  }
+	  else
+	  {
+	    temp->sprite = __level.enemy3alt1;
+	    temp->think = enemy3alt1Think;
+	  }
+	  
+	  temp->canKill = 1;
+	  temp->isBad = 1;
+	
 	}
 	else if(__level.tileMap[(j * __level.tileWidth) + i] == 5) /*enemy2*/
 	{
-	Entity* temp;
-	w = __level.tileSet->w;
-	h = __level.tileSet->h;
-	x = i * w;
-	y = j * h;
-	temp = newEntity();
-	temp->bbox.x = x;
-	temp->bbox.y = y;
-	temp->bbox.w = w;
-	temp->bbox.h = h;
-	temp->velx = 4;
-	temp->health = 1;
-	temp->sprite = __level.enemy2;
-	temp->canKill = 1;
-	temp->isBad = 1;
-	temp->think = enemy2Think;
+	  Entity* temp;
+	  int rng = rand_int(2);
+	  w = __level.tileSet->w;
+	  h = __level.tileSet->h;
+	  x = i * w;
+	  y = j * h;
+	  temp = newEntity();
+	  temp->bbox.x = x;
+	  temp->bbox.y = y;
+	  temp->bbox.w = w;
+	  temp->bbox.h = h;
+	  temp->velx = 4;
+	  temp->health = 1;
+	  if(rng == 0)
+	  {
+	    temp->sprite = __level.enemy2;
+	    temp->think = enemy2Think;
+	  }
+	  else{
+	    temp->sprite = __level.enemy2alt1;
+	    temp->think = enemy2alt1Think;
+	  }
+	  
+	  temp->canKill = 1;
+	  temp->isBad = 1;
+	
 	}
 	else if(__level.tileMap[(j * __level.tileWidth) + i] == 6) /*enemy1*/
 	{
-	Entity* temp;
-	w = __level.tileSet->w;
-	h = __level.tileSet->h;
-	x = i * w;
-	y = j * h;
-	temp = newEntity();
-	temp->bbox.x = x;
-	temp->bbox.y = y;
-	temp->bbox.w = w;
-	temp->bbox.h = h;
-	/*temp->velx = 4;*/
-	temp->health = 1;
-	temp->sprite = __level.enemy1;
-	temp->canKill = 1;
-	temp->isBad = 1;
-	temp->think = enemy1Think;
+	  Entity* temp;
+	  int rng = rand_int(2);
+	  w = __level.tileSet->w;
+	  h = __level.tileSet->h;
+	  x = i * w;
+	  y = j * h;
+	  temp = newEntity();
+	  temp->bbox.x = x;
+	  temp->bbox.y = y;
+	  temp->bbox.w = w;
+	  temp->bbox.h = h;
+	  temp->health = 1;
+	  if(rng == 0)
+	  {
+	    temp->sprite = __level.enemy1;
+	    temp->think = enemy1Think;
+	  }
+	  else
+	  {
+	    temp->sprite = __level.enemy1alt1;
+	    temp->think = enemy1alt1Think;
+	  }
+	  
+	  temp->canKill = 1;
+	  temp->isBad = 1;
+	  
 	}
 	else if(__level.tileMap[(j * __level.tileWidth) + i] == 9) /*enemy9 (boss)*/
 	{
@@ -346,13 +384,25 @@ void CloseLevel()
     FreeSprite(__level.enemy1);
     __level.enemy1 = NULL;
   }
+  if(__level.enemy1alt1 != NULL){
+    FreeSprite(__level.enemy1alt1);
+    __level.enemy1alt1 = NULL;
+  }
   if(__level.enemy2 != NULL){
     FreeSprite(__level.enemy2);
     __level.enemy2 = NULL;
   }
+  if(__level.enemy2alt1 != NULL){
+    FreeSprite(__level.enemy2alt1);
+    __level.enemy2alt1 = NULL;
+  }
   if(__level.enemy3 != NULL){
     FreeSprite(__level.enemy3);
     __level.enemy3 = NULL;
+  }
+  if(__level.enemy3alt1 != NULL){
+    FreeSprite(__level.enemy3alt1);
+    __level.enemy3alt1 = NULL;
   }
   if(__level.enemy9 != NULL){
     FreeSprite(__level.enemy9);

@@ -124,14 +124,29 @@ void playerThink(Entity *self);
 void enemy3Think(Entity *self);
 
 /**
+ * @brief simple enemy that goes back and forth, but doesn't walk off ledges
+ */
+void enemy3alt1Think(Entity *self);
+
+/**
  * @brief simple enemy that goes back and forth while jumping
  */
 void enemy2Think(Entity *self);
 
 /**
+ * @brief simple enemy that goes back and forth while jumping like the player
+ */
+void enemy2alt1Think(Entity *self);
+
+/**
  * @brief simple enemy that floats in place
  */
 void enemy1Think(Entity *self);
+
+/**
+ * @brief simple enemy that floats left and right
+ */
+void enemy1alt1Think(Entity *self);
 
 /**
  * @brief level 1 boss

@@ -373,12 +373,43 @@ void enemy3Think(Entity *self)
       if(!worldCollide(box)) self->bbox.y = box.y;
     }
     
-    if(self->ST_JUMP)
+    if(killCollideNonPlayer(self->bbox))
     {
-      if(self->vely > -10) self->vely -= 2;
-      else self->ST_JUMP = 0;
+      self->health = 0;
     }
-    else if(self->vely < 10) self->vely += 2;
+  }
+  else
+  {
+    self->inuse = 0;
+  }
+}
+
+void enemy3alt1Think(Entity *self)
+{
+  int temp;
+  int temp2;
+  SDL_Rect box = self->bbox;
+  SDL_Rect box2= self->bbox;
+  
+  if(self->velx >= 0) box2.x += 15; /*box 2 looks ahead of the direction the enmey is moving, and down to where it might fall*/
+  if(self->velx <  0) box2.x -= 15;
+  box2.y += 15;
+  
+  if(self->health > 0)
+  {
+    if(self->velx) /*move in current direction until a collision or pit is detected, then change direction*/
+    {
+      box.x = box.x + self->velx;
+      temp = worldCollide(box);
+      temp2=worldCollide(box2);
+      if(temp2 && !temp) self->bbox.x += self->velx;
+      else self->velx *= -1;
+    }
+    if(self->vely)
+    {
+      box.y = self->bbox.y + self->vely;
+      if(!worldCollide(box)) self->bbox.y = box.y;
+    }
     
     if(killCollideNonPlayer(self->bbox))
     {
@@ -433,6 +464,48 @@ void enemy2Think(Entity *self)
   }
 }
 
+void enemy2alt1Think(Entity *self)
+{
+  SDL_Rect box = self->bbox;
+  int temp;
+  
+  if(self->health > 0)
+  {
+    if(self->velx) /*move in current direction until a collision is detected, then change direction*/
+    {
+      box.x = box.x + self->velx;
+      temp = worldCollide(box);
+      if(!temp) self->bbox.x += self->velx;
+      else self->velx *= -1;
+    }
+    if(self->vely)
+    {
+      box.y = self->bbox.y + self->vely;
+      if(!worldCollide(box)) self->bbox.y = box.y;
+    }
+    
+    if(isGrounded(box))
+    {
+	self->ST_JUMP = 1;
+	self->vely = -20;
+    }
+    if(self->ST_JUMP)
+    {
+      if(self->vely >= 0) self->ST_JUMP = 0;
+    }
+    if(self->vely < 10) self->vely += 2;
+    
+    if(killCollideNonPlayer(self->bbox))
+    {
+      self->health = 0;
+    }
+  }
+  else
+  {
+    self->inuse = 0;
+  }
+}
+
 void enemy1Think(Entity *self)
 {
   SDL_Rect box = self->bbox;
@@ -460,6 +533,47 @@ void enemy1Think(Entity *self)
     }
     else{
       if(self->vely < 10) self->vely += 2;
+      else self->ST_JUMP = 1;
+    }
+    
+    if(killCollideNonPlayer(self->bbox))
+    {
+      self->health = 0;
+    }
+  }
+  else
+  {
+    self->inuse = 0;
+  }
+}
+
+void enemy1alt1Think(Entity *self)
+{
+  SDL_Rect box = self->bbox;
+  int temp;
+  
+  if(self->health > 0)
+  {
+   if(self->velx) /*move in current direction until a collision is detected, then change direction*/
+    {
+      box.x = box.x + self->velx;
+      temp = worldCollide(box);
+      if(!temp) self->bbox.x += self->velx;
+      else self->velx *= -1;
+    }
+    if(self->vely)
+    {
+      box.y = self->bbox.y + self->vely;
+      if(!worldCollide(box)) self->bbox.y = box.y;
+    }
+    
+    if(self->ST_JUMP)
+    {
+      if(self->velx > -10) self->velx -= 2;
+      else self->ST_JUMP = 0;
+    }
+    else{
+      if(self->velx < 10) self->velx += 2;
       else self->ST_JUMP = 1;
     }
     

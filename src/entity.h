@@ -139,6 +139,16 @@ void enemy1Think(Entity *self);
 void enemy9Think(Entity *self);
 
 /**
+ * @brief another boss
+ */
+void enemy9alt1Think(Entity *self);
+
+/**
+ * @brief yet another boss
+ */
+void enemy9alt2Think(Entity *self);
+
+/**
  * @brief clears an entity
  */
 void freeEntity(Entity *ent);

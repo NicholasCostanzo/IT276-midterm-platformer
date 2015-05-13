@@ -23,7 +23,7 @@ struct node* newNode(int level);
 
 struct node* createTree(struct node* leaf, int data[]);
 
-static int rand_int(int n);
+int rand_int(int n);
 
 void shuffle(int *array, int n);
 

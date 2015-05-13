@@ -1,5 +1,6 @@
 #include "level.h"
 #include "entity.h"
+#include "levelTree.h"
 #include <string.h>
 #include <stdio.h>
 
@@ -18,7 +19,7 @@ void LoadLevel(char *filename)
   int tsw,tsh; /*tile set width and height*/
   int tw,th; /*tile map width and height*/
   int *maptemp = NULL;
-  Sprite *temp, *temp2, *temp3, *temp4, *temp5, *temp6, *temp9;
+  Sprite *temp, *temp2, *temp3, *temp4, *temp5, *temp6, *temp9, *temp9alt1, *temp9alt2;
   levelfile = fopen(filename,"r");
   if (levelfile == NULL)
   {
@@ -114,6 +115,8 @@ void LoadLevel(char *filename)
   temp5 = LoadSprite("images/enemy2.png",tsw,tsh);
   temp6 = LoadSprite("images/enemy1.png",tsw,tsh);
   temp9 = LoadSprite("images/enemy9.png", tsw*4, tsh*4);
+  temp9alt1 = LoadSprite("images/enemy9alt1.png", tsw*4, tsh*4);
+  temp9alt2 = LoadSprite("images/enemy9alt2.png", tsw*4, tsh*4);
   
   if (!temp)
   {
@@ -138,6 +141,8 @@ void LoadLevel(char *filename)
   __level.enemy2 = temp5;
   __level.enemy3 = temp6;
   __level.enemy9 = temp9;
+  __level.enemy9alt1 = temp9alt1;
+  __level.enemy9alt2 = temp9alt2;
   __level.tileMap = maptemp;
   __level.tileWidth = tw;
   __level.tileHeight = th;
@@ -271,6 +276,7 @@ void CreateLevelEntities()
 	else if(__level.tileMap[(j * __level.tileWidth) + i] == 9) /*enemy9 (boss)*/
 	{
 	  Entity* temp;
+	  int rng = rand_int(3);
 	  w = __level.tileSet->w * 4;
 	  h = __level.tileSet->h * 4;
 	  x = i * __level.tileSet->w;
@@ -280,12 +286,26 @@ void CreateLevelEntities()
 	  temp->bbox.y = y;
 	  temp->bbox.w = w;
 	  temp->bbox.h = h;
-	  temp->velx = 4;
+	  
 	  temp->health = 3;
-	  temp->sprite = __level.enemy9;
+	  temp->velx = 4;
+	  if(rng == 0) /*default boss fight: hovers up and down and left and right*/
+	  {
+	    temp->sprite = __level.enemy9;
+	    temp->think = enemy9Think;
+	  }
+	  else if (rng == 1){ /*alt boss fight 1: bounces around the room like a pong*/
+	    temp->sprite = __level.enemy9alt1;
+	    temp->think = enemy9alt1Think;
+	    temp->vely = 4;
+	  }
+	  else /*alt boss fight 2: slides around edges randomly*/
+	  {
+	    temp->sprite = __level.enemy9alt2;
+	    temp->think = enemy9alt2Think;
+	  }
 	  temp->canKill = 1;
 	  temp->isBad = 1;
-	  temp->think = enemy9Think;
 	}
       }
     }
@@ -317,11 +337,35 @@ void CloseLevel()
   }
   
   /*TODO: this is causing a seg fault??? figure out why*/
-  /*if (__level.tileGoal != NULL) 
+  if (__level.tileGoal != NULL) 
   {
-    free(__level.tileGoal);
+    FreeSprite(__level.tileGoal);
     __level.tileGoal = NULL;
-  }*/
+  }
+  if(__level.enemy1 != NULL){
+    FreeSprite(__level.enemy1);
+    __level.enemy1 = NULL;
+  }
+  if(__level.enemy2 != NULL){
+    FreeSprite(__level.enemy2);
+    __level.enemy2 = NULL;
+  }
+  if(__level.enemy3 != NULL){
+    FreeSprite(__level.enemy3);
+    __level.enemy3 = NULL;
+  }
+  if(__level.enemy9 != NULL){
+    FreeSprite(__level.enemy9);
+    __level.enemy9 = NULL;
+  }
+  if(__level.enemy9alt1 != NULL){
+    FreeSprite(__level.enemy9alt1);
+    __level.enemy9alt1 = NULL;
+  }
+  if(__level.enemy9alt2 != NULL){
+    FreeSprite(__level.enemy9alt2);
+    __level.enemy9alt2 = NULL;
+  }
   if (__level.tileMap != NULL)
   {
     free(__level.tileMap);

@@ -16,6 +16,8 @@ typedef struct
   Sprite *enemy2;
   Sprite *enemy3;
   Sprite *enemy9;
+  Sprite *enemy9alt1;
+  Sprite *enemy9alt2;
   Sprite *tileGoal; /**<tile for the level goal*/
   SDL_Rect bounds;  /**<absolute bounds for entities in this level*/
   int *tileMap; /**<allocated tilemap data*/

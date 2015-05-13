@@ -263,20 +263,22 @@ void playerThink(Entity *self)
       {
 	box.x = self->bbox.x + self->velx;
 	if(!worldCollide(box)) self->bbox.x = box.x;
+	box.x = self->bbox.x;
       }
       if(self->vely)
       {
 	box.y = self->bbox.y + self->vely;
 	if(!worldCollide(box)) self->bbox.y = box.y;
+	box.y = self->bbox.y;
       }
       
-      if(keys[SDLK_d]) /*<move the player right*/
+      if(keys[SDLK_d] || keys[SDLK_RIGHT]) /*<move the player right*/
       {
 	  if(self->velx < 10)self->velx += 2;
       }
       else if (self->velx > 0) self->velx -= 2;
       
-      if(keys[SDLK_a]) /*<move the player left*/
+      if(keys[SDLK_a] || keys[SDLK_LEFT]) /*<move the player left*/
       {
 	  if(self->velx > -10)self->velx -= 2;
       }
@@ -285,13 +287,13 @@ void playerThink(Entity *self)
       if(keys[SDLK_SPACE] && isGrounded(box))
       {
 	  self->ST_JUMP = 1;
+	  self->vely = -20;
       }
       if(self->ST_JUMP)
       {
-	if(self->vely > -10) self->vely -= 2;
-	else self->ST_JUMP = 0;
+	if(self->vely >= 0) self->ST_JUMP = 0;
       }
-      else if(self->vely < 10) self->vely += 2;
+      if(self->vely < 10) self->vely += 2;
       
       goalNum = goalCollide(self->bbox);
       if(goalNum && levelMap && levelMap->child)
@@ -301,8 +303,7 @@ void playerThink(Entity *self)
 	{
 	  if(levelMap->sibling)levelMap = levelMap->sibling;
 	}
-	for(i = 0; i < 2; i++){ /*something breaks graphics here unless you do all of it twice for some reason. this is just a hacky quick-fix TODO: fucking fix it*/
-	CloseLevel();
+	CloseLevel(); /*TODO: split these calls off to some sort of reload function, and consider splitting close and init calls out of main and into their own file*/
 	CloseSprites();
 	clearEntities();
 	
@@ -310,17 +311,16 @@ void playerThink(Entity *self)
 	initEntityList();
 	InitLevelSystem();
 	level = levelMap->level;
+	if (level == 0) level = 999;
 	LoadLevel(numToFileName(level)); 
 	CreateLevelEntities();
 	player = makePlayer();
-	}
 	
 	fprintf(stdout, "level: %d \n", levelMap->level);
       }
       else if(goalNum && levelMap)
       {
 	level=999;
-	for(i = 0; i < 2; i++){ /*something breaks graphics here unless you do all of it twice for some reason. this is just a hacky quick-fix TODO: fucking fix it*/
 	CloseLevel();
 	CloseSprites();
 	clearEntities();
@@ -331,7 +331,6 @@ void playerThink(Entity *self)
 	LoadLevel(numToFileName(level)); 
 	CreateLevelEntities();
 	player = makePlayer();
-	}
 	
 	fprintf(stdout, "level: %d \n", levelMap->level);
       }
@@ -339,6 +338,7 @@ void playerThink(Entity *self)
       if(enemyBounce(self->bbox))
       {
 	self->ST_JUMP = 1;
+	self->vely = -20;
       }
       else if(killCollide(self->bbox))
       {
@@ -508,6 +508,83 @@ void enemy9Think(Entity *self)
     {
       self->health = 0;
     }
+  }
+  else
+  {
+    self->inuse = 0;
+    done = 1;
+    exit(0);
+  }
+}
+
+void enemy9alt1Think(Entity *self)
+{
+  SDL_Rect box = self->bbox;
+  
+  if(self->health > 0)
+  {
+    if(self->velx)
+      {
+	box.x = self->bbox.x + self->velx;
+	if(!worldCollide(box)) self->bbox.x = box.x;
+	else self->velx*=-1;
+	box.x = self->bbox.x;
+      }
+      if(self->vely)
+      {
+	box.y = self->bbox.y + self->vely;
+	if(!worldCollide(box)) self->bbox.y = box.y;
+	else self->vely*=-1;
+	box.y = self->bbox.y;
+      }
+      
+      if(killCollideNonPlayer(self->bbox))
+      {
+	self->health = 0;
+      }
+  }
+  else
+  {
+    self->inuse = 0;
+    done = 1;
+    exit(0);
+  }
+}
+
+void enemy9alt2Think(Entity *self)
+{
+  SDL_Rect box = self->bbox;
+  int rng = rand_int(2);
+  
+  if(self->health > 0)
+  {
+    if(self->velx)
+      {
+	box.x = self->bbox.x + self->velx;
+	if(!worldCollide(box)) self->bbox.x = box.x;
+	else{
+	  self->vely=self->velx;
+	  self->velx*=0;
+	  if(rng == 1)self->vely*=-1;
+	}
+	box.x = self->bbox.x;
+      }
+      if(self->vely)
+      {
+	box.y = self->bbox.y + self->vely;
+	if(!worldCollide(box)) self->bbox.y = box.y;
+	else{
+	  self->velx = self->vely;
+	  self->vely*=0;
+	  if(rng == 1)self->velx*=-1;
+	}
+	box.y = self->bbox.y;
+      }
+      
+      if(killCollideNonPlayer(self->bbox))
+      {
+	self->health = 0;
+      }
   }
   else
   {

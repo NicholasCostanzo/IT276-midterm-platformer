@@ -79,7 +79,7 @@ struct node* createTree(struct node* leaf, int levels[])
 }
 
 /*the following two functions are for a fisher-yates shuffle*/
-static int rand_int(int n) {
+int rand_int(int n) {
   /*int limit = RAND_MAX - RAND_MAX % n;
   int rnd;
   do {
@@ -128,14 +128,14 @@ void buildLevelTree()
   }
   shuffle(&levels, NumberOfLevels);
   
-  for(i = 0; i < NumberOfLevels; i++) /*force level 1 to be in the beginning*/
+  /*for(i = 0; i < NumberOfLevels; i++) force level 1 to be in the beginning/
   {
     if(levels[i]==1)
     {
       levels[i] = levels[0];
       levels[0] = 1;
     }
-  }
+  }*/
   
   for(i = 0,l=0; i < MaxDepth; i++) /*construct tree based on random input*/
   {

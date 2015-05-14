@@ -147,7 +147,7 @@ int isGrounded(SDL_Rect box1)
     if(BlockEntityList[i].inuse == 1)
     {
       box2 = BlockEntityList[i].bbox;
-      if(onTop(box1, box2, 10)) return 1;
+      if(onTop(box1, box2, 2)) return 1;
     }
   }
   return 0;
@@ -269,6 +269,11 @@ void playerThink(Entity *self)
       {
 	box.y = self->bbox.y + self->vely;
 	if(!worldCollide(box)) self->bbox.y = box.y;
+	else if(self->vely > 0)
+	{
+	  box.y = self->bbox.y + 1;
+	  if(!worldCollide(box)) self->bbox.y = box.y;
+	}
 	box.y = self->bbox.y;
       }
       

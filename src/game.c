@@ -21,6 +21,7 @@ int mode;
 void Init_All();
 
 void updateCamera();
+void introSequence();
 /*void mainMenu();*/
 
 
@@ -43,7 +44,7 @@ int main(int argc, char *argv[])
   CreateLevelEntities();
   player = makePlayer();*/
   
-  
+  introSequence();
   
   do
   {
@@ -107,6 +108,36 @@ void Init_All()
   }
   
 }*/
+
+void introSequence()
+{
+  int keyn;
+  int start = 0;
+  int slide = 0;
+  int delay = 0;
+  Uint8 *keys;
+  Sprite *img0 = LoadSprite("images/intro0.png",1024,768);
+  Sprite *img1 = LoadSprite("images/intro1.png",1024,768);
+  Sprite *img2 = LoadSprite("images/intro2.png",1024,768);
+  while(!start)
+  {
+    ResetBuffer();
+    if(slide==0) DrawSprite(img0, screen, 0, 0, 0);
+    else if(slide==1) DrawSprite(img1, screen, 0, 0, 0);
+    else if(slide==2) DrawSprite(img2, screen, 0, 0, 0);
+    else start = 1;
+    
+    keys = SDL_GetKeyState(&keyn);
+    
+    NextFrame();
+    SDL_PumpEvents();
+    if(delay > 0)delay--;
+    if(keys[SDLK_SPACE] && delay == 0){
+      slide++;
+      delay = 30;
+    }
+  }
+}
 
 /*
  * TODO: split camera functionality off into camera.c and tweak this functionality

@@ -98,7 +98,7 @@ void Init_Graphics()
 
 void ResetBuffer()
 {
-// wfm5 I dont use buffering in my code how exactly does it work 
+// wfm5 I dont use buffering in my code how exactly does it work  
     SDL_BlitSurface(buffer,&Camera,screen,NULL);
 }
 
